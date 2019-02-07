@@ -30,7 +30,6 @@ func solve(t *Task){
 	res  := t.a + t.b
 	t.disp <- res
 
-
 }
 
 func handleReq(t *Task){
@@ -41,21 +40,24 @@ func ComputeServer()(chan *Task){
 
 	reqChan := make(chan *Task, NumRequests)
 
-	wgRout.Add(NumRoutines) // Add required # of routines to WaitGroup
+		go func() {
 
-	for i := 0 ; i < NumRoutines; i++ { // loop over required # of routines
+			for elem:=range reqChan {
 
-		go func(){
-			defer wgRout.Done() //decrement WaitGroup Count after func is executed
+				wgRout.Add(1)
 
-			semRout <- 1
+				semRout <- 1
 
-			handleReq(<-reqChan)
+				handleReq(elem)
 
-			<-semRout
+				<-semRout
 
+
+			}
 		}()
-	}
+
+
+
 
 
 	return reqChan
@@ -65,19 +67,22 @@ func DisplayServer() (chan float32){
 
 	dispChan := make(chan float32, NumRequests)
 
-	wgDisp.Add(NumRequests)
+		go func() {
 
-	//for i := 0 ; i < NumRoutines; i++ { // loop over required # of routines
+			for elem:= range dispChan{
 
-		go func(){
-			defer wgRout.Done() //decrement WaitGroup Count after func is executed
-			fmt.Println("\nResult: ", <-dispChan)
+
+			wgDisp.Add(1)
+
+			fmt.Println("\nResult: ", elem)
 			fmt.Println("-------")
-			<- semDisp
 
+			wgRout.Done()
+			wgDisp.Done()
+
+			}
 
 		}()
-	//}
 
 	return dispChan
 
@@ -91,11 +96,14 @@ func main() {
 	for {
 		var a, b float32
 		// make sure to use semDisp
-		semDisp <- 1
 		// …
+
+
+		semDisp <- 1
 		fmt.Print("Enter two numbers: ")
 		fmt.Scanf("%f %f \n", &a, &b)
 		fmt.Printf("%f %f \n", a, b)
+		<- semDisp
 
 
 
@@ -111,8 +119,11 @@ func main() {
 		time.Sleep( 1e9 )
 	}
 	// Don’t exit until all is done
-	wgRout.Wait()
 	wgDisp.Wait()
+	close(reqChan)
+	wgRout.Wait()
+
+
 
 }
 
