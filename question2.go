@@ -25,6 +25,7 @@ type Task struct {
 }
 
 func solve(t *Task){
+	rand.Seed(1203)
 	timer := (rand.Float64() * 14 ) + 1
 	time.Sleep( time.Duration(timer) * time.Second)
 	res  := t.a + t.b
@@ -69,19 +70,18 @@ func DisplayServer() (chan float32){
 
 		go func() {
 
-			for elem:= range dispChan{
+			for elem := range dispChan {
 
+				wgDisp.Add(1)
 
-			wgDisp.Add(1)
+				semDisp <- 1
+				fmt.Println("\nResult: ", elem)
+				fmt.Println("-------")
+				<-semDisp
 
-			fmt.Println("\nResult: ", elem)
-			fmt.Println("-------")
-
-			wgRout.Done()
-			wgDisp.Done()
-
+				wgRout.Done()
+				wgDisp.Done()
 			}
-
 		}()
 
 	return dispChan
@@ -119,9 +119,12 @@ func main() {
 		time.Sleep( 1e9 )
 	}
 	// Don’t exit until all is done
+	wgRout.Wait()
 	wgDisp.Wait()
 	close(reqChan)
-	wgRout.Wait()
+	close(dispChan)
+
+
 
 
 

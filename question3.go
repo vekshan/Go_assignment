@@ -4,34 +4,65 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"sync"
 )
+
+var semPop = make(chan int, 1)
+var semPush = make(chan int, 1)
+
 type Stack struct {
 	triangles []Triangle
 }
 
 func newStack() *Stack{
 	var triangles []Triangle
+
 	return &Stack{triangles:triangles}
 }
 
-
 func pop(stack *Stack) Triangle{
+
 	if isEmpty(stack){
 		return Triangle{}
 	}
+
+	triangle := peek(stack)
+
+	semPop<-1
+	stack.triangles = stack.triangles[:len(stack.triangles)-1]
+	<-semPop
+
+	return triangle
+
+}
+func peek(stack *Stack) Triangle{
+
+	if isEmpty(stack){
+		return Triangle{}
+	}
+
 	top := len(stack.triangles) - 1
+
+
 	return stack.triangles[top]
+
 }
 
 func push(stack *Stack, triangle Triangle){
+	semPush <- 1
 	stack.triangles = append(stack.triangles, triangle)
+	<-semPush
+}
+
+func size(stack *Stack) int{
+	return len(stack.triangles)
 }
 
 func isEmpty(stack *Stack) bool{
 	if len(stack.triangles) == 0 {
-		return false
-	}else{
 		return true
+	}else{
+		return false
 	}
 }
 
@@ -66,6 +97,7 @@ func (t Triangle) Area() float64 {
 }
 
 func classifyTriangles(highRatio *Stack, lowRatio *Stack, ratioThreshold float64, triangles []Triangle){
+
 	for _,t := range triangles{
 		if t.Perimeter()/t.Area() > ratioThreshold {
 			push(highRatio, t)
@@ -84,15 +116,38 @@ func main() {
 
 	triangles:= triangles10000()
 
+
 	start := 0
-	end := 1001
+	end := 1000
+
 	highRatio := newStack()
 	lowRatio := newStack()
+
+	var wg sync.WaitGroup
+
+	wg.Add(10)
 	for i:=0; i < 10; i++{
+
 		sl := triangles[start:end]
+		go func(){
+			classifyTriangles(highRatio,lowRatio,1,sl)
+			wg.Done()
+		}()
+
+
 		start += 1000
 		end += 1000
 	}
+
+	wg.Wait()
+
+
+	fmt.Println(peek(lowRatio))
+	fmt.Println(peek(highRatio))
+	fmt.Println(size(lowRatio)+size(highRatio))
+	fmt.Println(pop(lowRatio))
+	fmt.Println(size(lowRatio)+size(highRatio))
+
 
 
 }
