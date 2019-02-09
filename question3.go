@@ -141,12 +141,11 @@ func main() {
 
 	wg.Wait()
 
+	fmt.Println("Size of low ratio stack: ", size(lowRatio))
+	fmt.Println("Size of high ratio stack: ", size(highRatio))
 
-	fmt.Println(peek(lowRatio))
-	fmt.Println(peek(highRatio))
-	fmt.Println(size(lowRatio)+size(highRatio))
-	fmt.Println(pop(lowRatio))
-	fmt.Println(size(lowRatio)+size(highRatio))
+	fmt.Println("Triangle at top of low ratio stack", peek(lowRatio))
+	fmt.Println("Triangle at top of high ratio stack", peek(highRatio))
 
 
 

@@ -75,6 +75,7 @@ func DisplayServer() (chan float32){
 				wgDisp.Add(1)
 
 				semDisp <- 1
+				fmt.Println("-------")
 				fmt.Println("\nResult: ", elem)
 				fmt.Println("-------")
 				<-semDisp

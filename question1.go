@@ -139,12 +139,12 @@ func (truck *Truck) print(){
 }
 
 func (pickup *Pickup) print(){
-	fmt.Printf("%s to %s with %f tons\n", pickup.name, pickup.destination, pickup.load);
+	fmt.Printf("%s to %s with %f tons (Private: %t) \n", pickup.name, pickup.destination, pickup.load, pickup.isPrivate);
 
 }
 
 func (trainCar *TrainCar) print(){
-	fmt.Printf("%s to %s with %f tons\n", trainCar.name, trainCar.destination, trainCar.load);
+	fmt.Printf("%s to %s with %f tons (%s)\n", trainCar.name, trainCar.destination, trainCar.load, trainCar.railway);
 
 }
 
@@ -223,7 +223,14 @@ func main() {
 	}
 
 	fmt.Println("Not going to TO or Montreal, bye!")
-	fmt.Println(trips)
+	fmt.Println("Trips: ",trips)
+	fmt.Println("Vehicles: ")
+	truckA.print()
+	truckB.print()
+	pickupA.print()
+	pickupB.print()
+	pickupC.print()
+	trainCarA.print()
 }
 
 
